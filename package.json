@@ -1,0 +1,30 @@
+{
+  "name": "balls_transform",
+  "version": "2.0.0",
+  "description": "translating dom elements",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build:production && gulp serve",
+    "build:ts": "webpack -w",
+    "build:production": "gulp build"
+  },
+  "author": "Torgonina Valeria",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.26.7",
+    "del": "^5.1.0",
+    "gulp": "^3.9.1",
+    "gulp-plumber": "^1.2.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-typescript": "^5.0.1",
+    "run-sequence": "^2.2.1",
+    "ts-loader": "^6.2.0",
+    "tslib": "^1.6.1",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "apexcharts": "^3.10.1",
+    "install": "^0.13.0",
+    "npm": "^6.12.0"
+  }
+}

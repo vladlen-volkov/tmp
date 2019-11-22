@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "target": "es2015",
+    "rootDir": "app",
+    "strict": true,
+    "baseUrl": "./app",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "inlineSourceMap": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "outDir": "./build/js",
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["./**/*"],
+  "references": []
+}
