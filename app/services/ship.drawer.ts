@@ -1,26 +1,27 @@
 import { ShapeDrawer } from './shape.drawer';
 import { ICords } from '../models/basic';
 import { COLORS } from '../configs/colors';
-import { Timing } from '../utils/timing';
 import { Canvas } from './canvas';
+import { repeat } from '../utils/animate';
 
 const inaccuracy = 1;
 
 export class ShipDrawer {
+  private currentPeak = -1;
   private image = new Image();
-  // private cords: ICords;
   private currDotCord: ICords;
   private width = 120; // picture's width according to canvas-scaling
   private height = 60; // picture's height according to canvas-scaling
   private xOffset = this.width * 0.8;
   private yOffset = this.height + 30; // 20 is a margin from bottom;
   private rotate = 0;
+  private rotateInaccuracy = 33; // this is a magic number getting in experiments (using in getter cords);
 
   private get cords(): ICords {
     const dotCord = this.currDotCord;
     return {
-      y: dotCord.y - this.yOffset,
-      x: dotCord.x - this.xOffset
+      y: dotCord.y - this.yOffset - (this.rotate + this.rotateInaccuracy) / 3, // equation getting by experiments
+      x: dotCord.x - this.xOffset + (this.rotate / 2) + this.rotateInaccuracy // equation getting by experiments
     }
   }
 
@@ -30,15 +31,14 @@ export class ShipDrawer {
     private pickCords: ICords[],
     private canvas: Canvas
   ) {
-    this.currDotCord = this.pickCords[0];
-    this.rotate = this.computeAngle(this.currDotCord, this.pathCords[40]);
-    console.log('rotate: ',this.rotate);
+    this.currDotCord = this.pathCords[20];
+    this.rotate = this.computeAngle(this.currDotCord, this.pathCords[21]);
 
     (document.all['next'] as HTMLButtonElement).addEventListener('click', () => {
-      this.nextCord()
+      this.moveToPeak(this.currentPeak + 1);
     });
     (document.all['prev'] as HTMLButtonElement).addEventListener('click', () => {
-      this.prevCord()
+      this.moveToPeak(this.currentPeak - 1)
     });
 
     window.addEventListener('keydown', (e) => {
@@ -50,7 +50,6 @@ export class ShipDrawer {
         return this.nextCord()
       }
     })
-
   }
 
   downloadImage(): Promise<ShipDrawer> {
@@ -64,88 +63,85 @@ export class ShipDrawer {
   }
 
   appearance() {
-    this.move()
+    this.move();
+    this.moveToPeak(0);
     //this.moveAccordingToPath(10, 160)
   }
 
-  nextCord() {
+  moveToPeak(i: number) {
+    const peak = this.pickCords[i];
+    if (!peak) {
+      return console.warn(`no pick with index {${i}}`);
+    }
+
+    const direction = this.currentPeak < i; // true means next; false means prev
+    const until = {done: false};
+
+    repeat({
+      until,
+      fps: 50,
+      draw: () => {
+        until.done = this.currDotCord === peak;
+        if (!until.done) {
+          if (direction) {
+            return this.nextCord()
+          }
+
+          this.prevCord();
+        }
+      },
+      onDone: () => {
+        this.currentPeak = i;
+      }
+    })
+  }
+
+  private nextCord() {
     this.clean();
     const i = this.pathCords.findIndex(c => c === this.currDotCord);
-    console.log(i);
-    const next = this.pathCords[i+1];
+    const next = this.pathCords[i + 1];
     this.rotate = this.computeAngle(this.currDotCord, next);
     this.currDotCord = next;
     this.move();
   }
 
-  prevCord() {
+  private prevCord() {
 
     this.clean();
     const i = this.pathCords.findIndex(c => c === this.currDotCord);
-    console.log(i);
-    const prev = this.pathCords[i-1];
+    const prev = this.pathCords[i - 1];
     this.rotate = this.computeAngle(this.currDotCord, prev);
     this.currDotCord = prev;
     this.move();
   }
 
-  // moveAccordingToPath(i, z) {
-  //   const until = {done: false};
-  //   let _i = i;
-  //   let m: boolean;
-  //   repeat({
-  //     until,
-  //     draw: () => {
-  //       m = !m;
-  //       if (!m) return;
-  //       _i++;
-  //       const cord = this.pathCords[_i];
-  //
-  //       // const t = this.pathCords[_i - 1].y - this.pathCords[_i].y;
-  //       // this.shaper.drawDot(cord.x, cord.y, 2,  t>0 ? COLORS.text: COLORS.red);
-  //       // console.log(t)
-  //       const next = {
-  //         x: cord.x,
-  //         y: cord.y
-  //       };
-  //       // this.canvas.ctx.beginPath();
-  //       // this.canvas.ctx.moveTo(next.x, next.y);
-  //       // this.canvas.ctx.lineTo(cord.x, cord.y);
-  //       // this.canvas.ctx.lineWidth = 2; // толщина линии
-  //       // this.canvas.ctx.strokeStyle = "#ff0000"; // цвет линии
-  //       // this.canvas.ctx.stroke();
-  //       const rotate = this.computeAngle(this.cords, next);
-  //       this.move(next, rotate);
-  //       until.done = _i === z;
-  //     }
-  //   })
-  // }
-
-  computeAngle(from: ICords, to: ICords) {
-    const cathetX = Math.abs(from.x - to.x);
-    const cathetY = Math.abs(from.y - to.y);
-    const c = from.y - to.y > 0 ? 1 : -1;
-
-    if (c < 0) console.log(`CHECK!`, ...arguments);
-
+  private computeAngle(from: ICords, to: ICords) {
+    const { cathetY, cathetX, rotateDirection } = this.computeTrangleAndDirection(from ,to);
     const gyp = Math.sqrt(Math.pow(cathetX, 2) + Math.pow(cathetY, 2));
     const sin = cathetY / gyp;
-    const rads = Math.asin(sin)*c;
-    console.log(`rads ${rads}`);
-    const result = -(rads / ShapeDrawer.radienMulti);
-    console.log('rotate', result);
+    const rads = Math.asin(sin) * rotateDirection;
     return -Math.ceil((rads / ShapeDrawer.radienMulti))
   }
 
+  private computeTrangleAndDirection(from: ICords, to: ICords) {
+    const xDelta = from.x - to.x;
+    const yDelta = from.y - to.y;
+    const cathetX = Math.abs(xDelta);
+    const cathetY = Math.abs(yDelta);
+    const shouldChangeRotateDir = (xDelta < 0 && yDelta > 0) || (xDelta > 0 && yDelta < 0);
 
+    return {
+      cathetX,
+      cathetY,
+      rotateDirection: shouldChangeRotateDir ? 1 : -1 // 1 is means that real peak of triangle tend to top, -1 means that real peak tends to bottom
+    }
+  }
 
   private move() {
-    this.shaper.drawDot(this.currDotCord.x, this.currDotCord.y, 4, COLORS.red)
     this.shaper.drawImage(this.cords.x, this.cords.y, this.image, this.width, this.height, null, this.rotate)
   }
 
   private clean() {
-    console.log(this.rotate);
     this.shaper.drawRect(
       this.cords.x - inaccuracy,
       this.cords.y - inaccuracy,

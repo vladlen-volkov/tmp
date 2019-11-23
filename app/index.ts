@@ -13,7 +13,7 @@ const canvas = new Canvas(document.all['canvas']);
 const shaper = new ShapeDrawer(canvas);
 
 // new TestImageDrawer(shaper).downloadImage().then(t => {
-//   animate({
+//   animate({`
 //     draw: p => {
 //       t.move({
 //         y:300,

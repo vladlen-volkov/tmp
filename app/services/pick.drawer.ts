@@ -6,13 +6,13 @@ import easeInOutQuint = Timing.easeInOutQuint;
 import linear = Timing.linear;
 import { COLORS } from '../configs/colors';
 
-interface PickOpts extends ICords{
+export interface PickOpts extends ICords{
   year: number
 }
 
 export class PickDrawer {
   private delayRatio = 150;
-  public readonly pickCords: ICords[] = [];
+  public readonly pickCords: PickOpts[] = [];
 
   private get partsAmount (): number {
     if (this.years.length < 2) return 2;

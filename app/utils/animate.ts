@@ -6,14 +6,16 @@ interface AnimateOpts {
 }
 
 interface RepeatOpts {
-  draw: () => void
+  draw: () => void,
   until: { done: boolean }
+  fps?: number
+  onDone?: () => void
 }
 
 export function animate({timing, draw, duration, onDone}: AnimateOpts) {
   const start = performance.now();
 
-  requestAnimationFrame(function animate(time) {
+  requestAnimationFrame(function doCycle(time) {
     let _time = start > time ? start : time;
     let timeFraction = (_time - start) / duration;
     if (timeFraction > 1) timeFraction = 1;
@@ -22,7 +24,7 @@ export function animate({timing, draw, duration, onDone}: AnimateOpts) {
     draw(progress);
 
     if (timeFraction < 1) {
-      return requestAnimationFrame(animate);
+      return requestAnimationFrame(doCycle);
     }
 
     if (typeof onDone === 'function') {
@@ -31,11 +33,24 @@ export function animate({timing, draw, duration, onDone}: AnimateOpts) {
   });
 }
 
-export function repeat(params: RepeatOpts) {
-  requestAnimationFrame(() => {
-    params.draw();
-    if (!params.until.done) {
-      repeat(params)
+export function repeat({fps, draw, until, onDone}: RepeatOpts) {
+  let prevCheck = performance.now();
+  const temp = 1000 / (fps || 1000);
+
+  requestAnimationFrame(function doCycle(time){
+    if (prevCheck + temp > time) {
+      return requestAnimationFrame(doCycle)
+    }
+
+    prevCheck = time;
+    draw();
+
+    if (!until.done) {
+      return requestAnimationFrame(doCycle)
+    }
+
+    if (typeof onDone === 'function') {
+      onDone()
     }
   });
 
