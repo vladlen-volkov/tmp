@@ -6,9 +6,10 @@ import { ICords } from '../models/basic';
 export class PathDrawer {
   private xRatio = 0;
   private yRatio = 1;
-  private sinRatio = 42;
+  private sinRatio = 70;
   private yRatioMultiplier = 4.2;
   private xRatioMultiplier = 142;
+  private xOffset = -120;
   lineCords: ICords[] = [];
 
   constructor(
@@ -46,7 +47,9 @@ export class PathDrawer {
   private computeNextCords(): {x: number, y: number} {
     return {
       y: this.canvas.height + this.sinRatio * Math.sin(this.xRatio) + (--this.yRatio * this.yRatioMultiplier),
-      x: this.xRatio * this.xRatioMultiplier
+      x: this.xRatio * this.xRatioMultiplier + this.xOffset
     }
   }
 }
+
+

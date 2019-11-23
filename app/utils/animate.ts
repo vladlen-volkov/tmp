@@ -1,5 +1,3 @@
-import { strict } from 'assert';
-
 interface AnimateOpts {
   duration: number
   draw: (t: number) => void
@@ -8,7 +6,7 @@ interface AnimateOpts {
 }
 
 interface RepeatOpts {
-  draw: (args?: any) => void
+  draw: () => void
   until: { done: boolean }
 }
 

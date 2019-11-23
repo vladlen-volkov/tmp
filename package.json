@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build:production && gulp serve",
+    "start:dev": "run-p start build:ts",
     "build:ts": "webpack -w",
     "build:production": "gulp build"
   },

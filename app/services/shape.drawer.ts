@@ -1,46 +1,89 @@
 import { Canvas } from './canvas';
 import { getPercentOf } from '../utils/numeric';
 import { COLORS } from '../configs/colors';
+import { ICords } from '../models/basic';
 
 export class ShapeDrawer {
-  private static fullAngle = 2 * Math.PI;
-  constructor(private canvas: Canvas) {}
+  static fullAngle = 2 * Math.PI;
+  static radienMulti = Math.PI / 180;
+
+  constructor(private canvas: Canvas) {
+  }
 
   drawDot(x, y, radius, color = COLORS.dot) {
-    const { ctx } = this.canvas;
+    const {ctx} = this.canvas;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, ShapeDrawer.fullAngle);
     ctx.fillStyle = color;
     ctx.fill()
   }
 
-  drawText(x, y, value: string, fontStyle: string = "30px Arial", color = COLORS.text, bgColor = COLORS.white) {
-    const { ctx } = this.canvas;
-    const textWidth = ctx.measureText(value).width;
-    const textHeight = parseInt(fontStyle, 10);
-    const padding = Math.floor(getPercentOf(textHeight, 20));
-    const wrapWidth = textWidth + padding * 2;
-    const wrapHeight = textHeight + padding * 2;
-    const wrapX = x - padding;
-    const wrapY = y - padding;
+  drawText(x, y, text, fontStyle = '30px Arial', color = COLORS.text, bgColor: COLORS | null = COLORS.white) {
+    const {ctx} = this.canvas;
 
-    this.drawRect(wrapX, wrapY, wrapWidth, wrapHeight, bgColor);
+    if (bgColor !== null) {
+      const textWidth = ctx.measureText(text).width;
+      const textHeight = parseInt(fontStyle, 10);
+      const padding = Math.floor(getPercentOf(textHeight, 20));
+      const wrapWidth = textWidth + padding * 2;
+      const wrapHeight = textHeight + padding * 2;
+      const wrapX = x - padding;
+      const wrapY = y - padding;
+
+      this.drawRect(wrapX, wrapY, wrapWidth, wrapHeight, bgColor);
+    }
+
 
     ctx.font = fontStyle;
     ctx.textBaseline = 'top';
     ctx.fillStyle = color;
-    ctx.fillText(value, x, y);
+    ctx.fillText(text, x, y);
   }
 
-  drawRect(x, y, width, height, bgColor = COLORS.dot) {
-    const { ctx } = this.canvas;
+  drawRect(x, y, width, height, bgColor = COLORS.dot, rotate?: number) {
+    const {ctx} = this.canvas;
     ctx.beginPath();
-    ctx.rect(x, y, width, height);
-    ctx.fillStyle = bgColor;
-    ctx.fill()
+    this.saveRestoreCtx(() => {
+      this.rotate(rotate, {
+        x: x + getPercentOf(width, 50),
+        y: y + getPercentOf(height, 50)
+      });
+      ctx.rect(x, y, width, height);
+      ctx.fillStyle = bgColor;
+      ctx.fill()
+    })
+
   }
 
-  drawImage(x, y) {
+  private rotate(rotate: number, center: ICords) {
+    if (rotate && rotate !== 0) {
+      const {x, y} = center;
+      this.canvas.ctx.translate(x, y);
+      this.canvas.ctx.rotate(rotate * ShapeDrawer.radienMulti);
+      this.canvas.ctx.translate(-x, -y)
+    }
+  }
 
+  drawImage(x, y, img: HTMLImageElement, width, height, bgColor: COLORS | null = COLORS.white, rotate?: number) {
+    const {ctx} = this.canvas;
+    ctx.beginPath();
+
+    this.saveRestoreCtx(() => {
+      this.rotate(rotate, {
+        x: x + getPercentOf(width, 50),
+        y: y + getPercentOf(height, 50)
+      });
+      if (bgColor !== null) {
+        this.drawRect(x, y, width, height, bgColor)
+      }
+      ctx.drawImage(img, x, y, width, height);
+    });
+  }
+
+  saveRestoreCtx(fn: Function) {
+    const {ctx} = this.canvas;
+    ctx.save();
+    fn();
+    ctx.restore();
   }
 }
