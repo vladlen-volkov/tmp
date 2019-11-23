@@ -40,11 +40,11 @@ export class ShapeDrawer {
     ctx.fillText(text, x, y);
   }
 
-  drawRect(x, y, width, height, bgColor = COLORS.dot, rotate?: number) {
+  drawRect(x, y, width, height, bgColor = COLORS.dot, degree?: number) {
     const {ctx} = this.canvas;
     ctx.beginPath();
     this.saveRestoreCtx(() => {
-      this.rotate(rotate, {
+      this.rotate(degree, {
         x: x + getPercentOf(width, 50),
         y: y + getPercentOf(height, 50)
       });
@@ -55,27 +55,29 @@ export class ShapeDrawer {
 
   }
 
-  private rotate(rotate: number, center: ICords) {
-    if (rotate && rotate !== 0) {
+  private rotate(degree: number, center: ICords) {
+    if (degree && degree !== 0) {
       const {x, y} = center;
       this.canvas.ctx.translate(x, y);
-      this.canvas.ctx.rotate(rotate * ShapeDrawer.radienMulti);
+      const rads = degree * ShapeDrawer.radienMulti;
+      this.canvas.ctx.rotate(rads);
       this.canvas.ctx.translate(-x, -y)
     }
   }
 
-  drawImage(x, y, img: HTMLImageElement, width, height, bgColor: COLORS | null = COLORS.white, rotate?: number) {
+  drawImage(x, y, img: HTMLImageElement, width, height, bgColor: COLORS | null = COLORS.white, degree?: number) {
     const {ctx} = this.canvas;
     ctx.beginPath();
 
     this.saveRestoreCtx(() => {
-      this.rotate(rotate, {
+      this.rotate(degree, {
         x: x + getPercentOf(width, 50),
         y: y + getPercentOf(height, 50)
       });
       if (bgColor !== null) {
         this.drawRect(x, y, width, height, bgColor)
       }
+      //this.drawRect(x, y, width, height, COLORS.pick)
       ctx.drawImage(img, x, y, width, height);
     });
   }

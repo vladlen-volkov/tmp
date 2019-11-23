@@ -13,7 +13,7 @@ export class ShipDrawer {
   private width = 120; // picture's width according to canvas-scaling
   private height = 60; // picture's height according to canvas-scaling
   private xOffset = this.width * 0.8;
-  private yOffset = this.height + 20; // 20 is a margin from bottom;
+  private yOffset = this.height + 30; // 20 is a margin from bottom;
   private rotate = 0;
 
   private get cords(): ICords {
@@ -64,7 +64,7 @@ export class ShipDrawer {
   }
 
   appearance() {
-    this.move(this.rotate)
+    this.move()
     //this.moveAccordingToPath(10, 160)
   }
 
@@ -73,9 +73,9 @@ export class ShipDrawer {
     const i = this.pathCords.findIndex(c => c === this.currDotCord);
     console.log(i);
     const next = this.pathCords[i+1];
-    const rotate = this.computeAngle(this.currDotCord, next);
+    this.rotate = this.computeAngle(this.currDotCord, next);
     this.currDotCord = next;
-    this.move(rotate);
+    this.move();
   }
 
   prevCord() {
@@ -84,9 +84,9 @@ export class ShipDrawer {
     const i = this.pathCords.findIndex(c => c === this.currDotCord);
     console.log(i);
     const prev = this.pathCords[i-1];
-    const rotate = this.computeAngle(this.currDotCord, prev);
+    this.rotate = this.computeAngle(this.currDotCord, prev);
     this.currDotCord = prev;
-    this.move(rotate);
+    this.move();
   }
 
   // moveAccordingToPath(i, z) {
@@ -124,22 +124,24 @@ export class ShipDrawer {
   computeAngle(from: ICords, to: ICords) {
     const cathetX = Math.abs(from.x - to.x);
     const cathetY = Math.abs(from.y - to.y);
+    const c = from.y - to.y > 0 ? 1 : -1;
+
+    if (c < 0) console.log(`CHECK!`, ...arguments);
 
     const gyp = Math.sqrt(Math.pow(cathetX, 2) + Math.pow(cathetY, 2));
     const sin = cathetY / gyp;
-    const rads = Math.asin(sin);
+    const rads = Math.asin(sin)*c;
+    console.log(`rads ${rads}`);
     const result = -(rads / ShapeDrawer.radienMulti);
     console.log('rotate', result);
-    return -(rads / ShapeDrawer.radienMulti)
+    return -Math.ceil((rads / ShapeDrawer.radienMulti))
   }
 
 
 
-  private move(rotate = 0) {
-    // this.clean();
-    console.log(rotate);
+  private move() {
     this.shaper.drawDot(this.currDotCord.x, this.currDotCord.y, 4, COLORS.red)
-    this.shaper.drawImage(this.cords.x, this.cords.y, this.image, this.width, this.height, null, rotate)
+    this.shaper.drawImage(this.cords.x, this.cords.y, this.image, this.width, this.height, null, this.rotate)
   }
 
   private clean() {
