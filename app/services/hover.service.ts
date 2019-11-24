@@ -1,5 +1,14 @@
-import { Canvas } from './canvas';
+import { MouseEventService } from './base/events';
 
-export class HoverService {
-  constructor(private canva: Canvas) {}
+interface HoverHandler {
+  area: { x0, x1, y0, y1 },
+  handler: (hovered: boolean, evt: MouseEvent) => void
+}
+
+export class HoverService extends MouseEventService{
+  constructor(canvasEl: HTMLCanvasElement) {
+    super(canvasEl, 'mousemove')
+  }
+
+
 }

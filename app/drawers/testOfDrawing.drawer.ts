@@ -1,20 +1,20 @@
-import { ShapeDrawer } from './shape.drawer';
+import { ShapeService } from '../services/shape.service';
 import { ICords } from '../models/basic';
 import { COLORS } from '../configs/colors';
 
-export class TestImageDrawer {
+export class TestOfDrawingDrawer {
   private width = 120; // picture's width according to canvas-scaling
   private height = 60; // picture's height according to canvas-scaling
   private cords: ICords = {x: 0, y: 300};
   private rotate = 0;
 
   constructor(
-    private shaper: ShapeDrawer
+    private shaper: ShapeService
   ) {}
 
   private image = new Image();
 
-  downloadImage(): Promise<TestImageDrawer> {
+  downloadImage(): Promise<TestOfDrawingDrawer> {
     return new Promise(resolve => {
       this.image.onload = () => {
         this.move({
@@ -27,9 +27,6 @@ export class TestImageDrawer {
       this.image.src = './ship.png'
     });
   }
-
-
-
 
   move(cords: ICords, rotate = 0) {
     this.clean();

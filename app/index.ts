@@ -1,41 +1,95 @@
 import { Canvas } from './services/canvas';
-import { PathDrawer } from './services/path.drawer';
-import { ShapeDrawer } from './services/shape.drawer';
-import { PickDrawer } from './services/pick.drawer';
-import { ShipDrawer } from './services/ship.drawer';
-import { TestImageDrawer } from './services/test.image.drawer';
-import { animate } from './utils/animate';
-import { Timing } from './utils/timing';
-import linear = Timing.linear;
+import { PathDrawer } from './drawers/path.drawer';
+import { ShapeService } from './services/shape.service';
+import { PeakDrawer } from './drawers/peak.drawer';
+import { ShipComponent } from './components/ship';
+import { HoverService } from './services/hover.service';
+import { ClickService } from './services/click.service';
+import { ICords } from './models/basic';
 
-const years = [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010];
-const canvas = new Canvas(document.all['canvas']);
-const shaper = new ShapeDrawer(canvas);
+class CanvasApp {
+  private canvas: Canvas;
+  private hover: HoverService;
+  private click: ClickService;
+  private shaper: ShapeService;
+  private path: PathDrawer;
+  private peaks: PeakDrawer;
+  private years: number[] = [];
+  private ship: ShipComponent;
+  private imageUrl: string;
 
-// new TestImageDrawer(shaper).downloadImage().then(t => {
-//   animate({`
-//     draw: p => {
-//       t.move({
-//         y:300,
-//         x: p*1000
-//       }, 360*p)
-//     },
-//     timing: linear,
-//     duration: 2000
-//   })
-// })
+  constructor({canvasEl, years, imageUrl}: {
+    canvasEl: HTMLCanvasElement,
+    imageUrl: string,
+    years: number[]
+  }) {
+    this.imageUrl = imageUrl;
+    this.years = years;
+    this.canvas = new Canvas(canvasEl);
+    this.hover = new HoverService(canvasEl);
+    this.click = new ClickService(canvasEl);
+    this.shaper = new ShapeService(this.canvas.ctx);
+  }
 
-new PathDrawer(canvas, shaper).drawPath().then(({lineCords}) => {
-  const pickCords = new PickDrawer(shaper, lineCords.slice(20, lineCords.length - 10), years).drawPicks();
-  return new ShipDrawer(shaper, lineCords, pickCords, canvas).downloadImage();
+  async run(): Promise<CanvasApp> {
+    this.path = await new PathDrawer(
+      this.canvas,
+      this.shaper
+    ).resolve();
 
-}).then(ship => {
-  setTimeout(() => {
-    ship.appearance();
-  }, 700)
-  //ship.appearance();
-  // setTimeout(() => ship.move({x: 60, y: 250}), 500);
-  // setTimeout(() => ship.smoothMove({x: 560, y: 250}), 1500)
+    this.peaks = await new PeakDrawer(
+      this.shaper,
+      this.shotPathToCenter(this.path.lineCords),
+      this.years,
+      this.hover,
+      this.click
+    ).resolve();
+
+    this.ship = new ShipComponent(this.shaper, this.path.lineCords, this.peaks.peakCords);
+
+    try {
+      await this.ship.downloadImage(this.imageUrl)
+    } catch (err) {
+      console.warn(`Image for ship wasn't downloaded! Check url correction!`);
+    }
+
+    await this.ship.appearance();
+    this.peaks.setActive(0);
+    return this
+  }
+
+  setActive(index: number) {
+    this.peaks.setActive(index);
+    this.ship.moveToPeak(index, () => {
+      console.log('activated!')
+    })
+  }
+
+  onPeakClick(handler: (i, year) => void) {
+    this.peaks.onClick(handler);
+  }
+
+  private shotPathToCenter(lineCords: ICords[]) {
+    return lineCords.slice(20, lineCords.length - 10)
+  }
+
+  destroy() {
+    this.hover.destroy();
+    this.click.destroy();
+  }
+}
+
+const canvas = new CanvasApp({
+  years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010],
+  canvasEl: document.all['canvas'],
+  imageUrl: './ship.png'
 });
+
+canvas.run().then(app => {
+  app.onPeakClick((i, year) => {
+    app.setActive(i);
+    console.log('chosen year:', year)
+  })
+})
 
 

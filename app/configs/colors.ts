@@ -1,7 +1,7 @@
 export enum COLORS {
-  dot = '#82d5ee',
-  pick = '#4eaaee',
-  text = '#333',
+  dot   = '#82d5ee',
+  peak  = '#4eaaee',
+  text  = '#333',
   white = '#fff',
-  red = '#f00'
+  red   = '#f00'
 };
