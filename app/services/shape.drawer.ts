@@ -55,16 +55,6 @@ export class ShapeDrawer {
 
   }
 
-  private rotate(degree: number, center: ICords) {
-    if (degree && degree !== 0) {
-      const {x, y} = center;
-      this.canvas.ctx.translate(x, y);
-      const rads = degree * ShapeDrawer.radienMulti;
-      this.canvas.ctx.rotate(rads);
-      this.canvas.ctx.translate(-x, -y)
-    }
-  }
-
   drawImage(x, y, img: HTMLImageElement, width, height, bgColor: COLORS | null = COLORS.white, degree?: number) {
     const {ctx} = this.canvas;
     ctx.beginPath();
@@ -87,5 +77,15 @@ export class ShapeDrawer {
     ctx.save();
     fn();
     ctx.restore();
+  }
+
+  private rotate(degree: number, center: ICords) {
+    if (degree && degree !== 0) {
+      const {x, y} = center;
+      this.canvas.ctx.translate(x, y);
+      const rads = degree * ShapeDrawer.radienMulti;
+      this.canvas.ctx.rotate(rads);
+      this.canvas.ctx.translate(-x, -y)
+    }
   }
 }

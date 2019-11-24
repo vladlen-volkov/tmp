@@ -27,9 +27,7 @@ export class PickDrawer {
     private shapeDrawer: ShapeDrawer,
     private pathCords: ICords[],
     private years: number[] = []
-  ) {
-
-  }
+  ) {}
 
   drawPicks() {
     for (let i = 0; i < this.years.length; i++) {
