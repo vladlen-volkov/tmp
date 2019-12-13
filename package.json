@@ -26,6 +26,6 @@
   "dependencies": {
     "apexcharts": "^3.10.1",
     "install": "^0.13.0",
-    "npm": "^6.12.0"
+    "npm": "^6.13.4"
   }
 }
