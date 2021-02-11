@@ -24,7 +24,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "apexcharts": "^3.10.1",
+    "apexcharts": "^3.24.0",
     "install": "^0.13.0",
     "npm": "^6.12.0"
   }
