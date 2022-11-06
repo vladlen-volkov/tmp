@@ -14,7 +14,7 @@
   "devDependencies": {
     "browser-sync": "^2.26.7",
     "del": "^5.1.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
     "gulp-typescript": "^5.0.1",
